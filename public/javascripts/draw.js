@@ -2,8 +2,8 @@
 // The faster the user moves their mouse
 // the larger the circle will be
 // We dont want it to be larger than this
-tool.maxDistance = 50;
 
+var myPath;
 
 // Returns an object specifying a semi-random color
 // The color will always have a red value of 0
@@ -19,30 +19,30 @@ function randomColor() {
 
 }
 
-
-// every time the user drags their mouse
-// this function will be executed
-function onMouseDrag(event) {
-
-  // Take the click/touch position as the centre of our circle
-  var x = event.middlePoint.x;
-  var y = event.middlePoint.y;
-
-  // The faster the movement, the bigger the circle
-  var radius = event.delta.length / 2;
-
-  // Generate our random color
-  var color = randomColor();
-
-  // Draw the circle
-  drawCircle( x, y, radius, color );
-
-   // Pass the data for this circle
-  // to a special function for later
-  emitCircle( x, y, radius, color );
-
+function onMouseDown(event) {
+    myPath = new Path();
+    myPath.strokeColor = '#00000';
+    myPath.strokeWidth = 1;
+    myPath.add(event.point);
+    view.draw();
 }
 
+function onMouseDrag(event) {
+    var step = event.delta / 2;
+    step.angle += 90;
+    var top = event.middlePoint
+    var bottom = event.middlePoint;
+    myPath.fullySelected = true;
+    myPath.add(top);
+    myPath.insert(0, bottom);
+    view.draw();
+}
+
+function onMouseUp(event) {
+    myPath.add(event.point);
+    myPath.selected = false;
+	myPath.smooth();
+}
 
 function drawCircle( x, y, radius, color ) {
 
