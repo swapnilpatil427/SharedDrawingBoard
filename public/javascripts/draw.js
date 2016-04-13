@@ -43,8 +43,6 @@ function onMouseDown(event) {
 function onMouseDrag(event) {
     mouseTimer = 0;
     clearInterval(mouseHeld);
-    var step = event.delta / 2;
-    step.angle += 90;
     var top = event.middlePoint;
     var bottom = event.middlePoint;
     path.add(top);
