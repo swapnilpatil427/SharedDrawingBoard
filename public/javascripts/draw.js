@@ -1,92 +1,133 @@
+var path;
 
-// The faster the user moves their mouse
-// the larger the circle will be
-// We dont want it to be larger than this
-
-var myPath;
-
-// Returns an object specifying a semi-random color
-// The color will always have a red value of 0
-// and will be semi-transparent (the alpha value)
-function randomColor() {
-
-  return {
-    red: 0,
-    green: Math.random(),
-    blue: Math.random(),
-    alpha: ( Math.random() * 0.25 ) + 0.05
+var socket = io();
+var path_to_send = {};
+var room = 'swapnil';
+var external_paths = {};
+var timer_is_active = false;
+var send_paths_timer;
+var mouseTimer = 0;
+var mouseHeld;
+var paper_object_count = 1;
+var uid = (function() {
+  var S4 = function() {
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
   };
-
-}
+  return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+}());
 
 function onMouseDown(event) {
-    myPath = new Path();
-    myPath.strokeColor = '#00000';
-    myPath.strokeWidth = 1;
-    myPath.add(event.point);
+    mouseTimer = 0;
+    mouseHeld = setInterval(function() {
+    mouseTimer++;
+        if (mouseTimer > 3) {
+          mouseTimer = 0;
+          clearInterval(mouseHeld);
+        }
+    }, 100);
+    var point = event.point;
+    path = new Path();
+    path.strokeColor = '#00000';
+    path.strokeWidth = 2;
+    path.add(event.point);
+    path.name = uid + ":" + (++paper_object_count);
     view.draw();
+    path_to_send = {
+      name: path.name,
+      rgba: '#00000',
+      start: event.point,
+      path: []
+    };
 }
 
 function onMouseDrag(event) {
+    mouseTimer = 0;
+    clearInterval(mouseHeld);
     var step = event.delta / 2;
     step.angle += 90;
-    var top = event.middlePoint
+    var top = event.middlePoint;
     var bottom = event.middlePoint;
-    myPath.fullySelected = true;
-    myPath.add(top);
-    myPath.insert(0, bottom);
+    path.add(top);
+    path.insert(0, bottom);
+    path.smooth();
     view.draw();
+    path_to_send.path.push({
+      top: top,
+      bottom: bottom
+    });
+    if (!timer_is_active) {
+        send_paths_timer = setInterval(function() {
+        socket.emit('draw:progress', room, uid, JSON.stringify(path_to_send));
+        path_to_send.path = new Array();
+    }, 100);
+    }
+
+    timer_is_active = true;
 }
+
 
 function onMouseUp(event) {
-    myPath.add(event.point);
-    myPath.selected = false;
-	myPath.smooth();
+    if (event.event.button == 1 || event.event.button == 2) {
+        return;
+    }
+    clearInterval(mouseHeld);
+    path.add(event.point);
+    path.closed = true;
+    path.smooth();
+    view.draw();
+    path_to_send.end = event.point;
+    socket.emit('draw:progress', room, uid, JSON.stringify(path_to_send));
+    socket.emit('draw:end', room, uid, JSON.stringify(path_to_send));
+    path_to_send.path = new Array();
+    path = new Path();
+    clearInterval(send_paths_timer);
+    timer_is_active = false;
 }
 
-function drawCircle( x, y, radius, color ) {
+var end_external_path = function(points, sessionId) {
+    var mypath = external_paths[sessionId];
+    if (mypath) {
+        mypath.add(new Point(points.end.x, points.end.y));
+        mypath.closed = true;
+        mypath.smooth();
+        view.draw();
+        external_paths[sessionId] = false;
+    }
+};
 
-  // Render the circle with Paper.js
-  var circle = new Path.Circle( new Point( x, y ), radius );
-  circle.fillColor = new RgbColor( color.red, color.green, color.blue, color.alpha );
+progress_external_path = function(points, sessionId) {
+    var path = external_paths[sessionId];
+    if (!path) {
+        external_paths[sessionId] = new Path();
+        path = external_paths[sessionId];
+        var start_point = new Point(points.start.x, points.start.y);
+        var color = new RgbColor(points.rgba.red, points.rgba.green, points.rgba.blue, points.rgba.opacity);
+        path.strokeColor = color;
+        path.strokeWidth = 2;
+        path.name = points.name;
+        view.draw();
+    }
 
-  // Refresh the view, so we always get an update, even if the tab is not in focus
-  view.draw();
-}
+    var paths = points.path;
+    var length = paths.length;
+    for (var i = 0; i < length; i++) {
+        path.add(new Point(paths[i].top.x, paths[i].top.y));
+        path.insert(0, new Point(paths[i].bottom.x, paths[i].bottom.y));
+    }
 
-
-// This function sends the data for a circle to the server
-// so that the server can broadcast it to every other user
-function emitCircle( x, y, radius, color ) {
-
-  // Each Socket.IO connection has a unique session id
-  var sessionId = io.socket.sessionid;
-
-  // An object to describe the circle's draw data
-  var data = {
-    x: x,
-    y: y,
-    radius: radius,
-    color: color
-  };
-
-  // send a 'drawCircle' event with data and sessionId to the server
-  io.emit( 'drawCircle', data, sessionId )
-
-  // Lets have a look at the data we're sending
-  console.log( data )
-
-}
+    path.smooth();
+    view.draw();
+};
 
 
-// Listen for 'drawCircle' events
-// created by other users
-io.on( 'drawCircle', function( data ) {
+socket.on('draw:progress', function(sessionId, data) {
+    if (sessionId !== uid && data) {
+        progress_external_path(JSON.parse(data), sessionId);
+    }
+});
 
-  console.log( 'drawCircle event recieved:', data );
-
-  // Draw the circle using the data sent
-  // from another user
-  drawCircle( data.x, data.y, data.radius, data.color );
-
-})
+socket.on('draw:end', function(sessionId, data) {
+    if (sessionId !== uid && data) {
+        end_external_path(JSON.parse(data), sessionId);
+    }
+});
