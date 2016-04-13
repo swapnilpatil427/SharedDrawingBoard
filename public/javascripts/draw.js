@@ -9,6 +9,7 @@ var send_paths_timer;
 var mouseTimer = 0;
 var mouseHeld;
 var paper_object_count = 1;
+var active_color ='#00000';
 var uid = (function() {
   var S4 = function() {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -16,7 +17,21 @@ var uid = (function() {
   return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }());
 
+
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
 function onMouseDown(event) {
+    active_color = document.getElementById("chosen-value").value;
+    console.log(active_color);
+
     mouseTimer = 0;
     mouseHeld = setInterval(function() {
     mouseTimer++;
@@ -27,14 +42,14 @@ function onMouseDown(event) {
     }, 100);
     var point = event.point;
     path = new Path();
-    path.strokeColor = '#00000';
+    path.strokeColor = active_color;
     path.strokeWidth = 2;
     path.add(event.point);
     path.name = uid + ":" + (++paper_object_count);
     view.draw();
     path_to_send = {
       name: path.name,
-      rgba: '#00000',
+      rgba: active_color,
       start: event.point,
       path: []
     };
@@ -99,8 +114,8 @@ progress_external_path = function(points, sessionId) {
         external_paths[sessionId] = new Path();
         path = external_paths[sessionId];
         var start_point = new Point(points.start.x, points.start.y);
-        var color = new RgbColor(points.rgba.red, points.rgba.green, points.rgba.blue, points.rgba.opacity);
-        path.strokeColor = color;
+        //var color = ;
+        path.strokeColor = points.rgba;
         path.strokeWidth = 2;
         path.name = points.name;
         view.draw();

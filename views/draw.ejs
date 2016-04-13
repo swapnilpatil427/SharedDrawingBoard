@@ -7,9 +7,19 @@
   <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
   <script src="/javascripts/paper.js"></script>
   <script src='/javascripts/draw.js' type="text/paperscript" canvas="draw"></script>
+  <script src="/javascripts/jscolor.min.js"></script>
+  <script>
+  function setTextColor(picker) {
+      document.getElementById("chosen-value").value = '#' + picker.toString();
+  }
+  </script>
   <body>
+      <button id="color" style="height:20px;width:20px;" class="jscolor {valueElement:'chosen-value', onFineChange:'setTextColor(this)'}">
+ 	  </button>
+
+ 	<input type="hidden" id="chosen-value"  value="000000">
     <div id="canvasContainer">
-    <canvas id="draw" resize="true" keepalive="true" width="1289" height="833"></canvas>
-</div>
+        <canvas id="draw" resize="true" keepalive="true" width="1289" height="833"></canvas>
+    </div>
   </body>
 </html>
