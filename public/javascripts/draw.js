@@ -55,6 +55,7 @@ function onMouseDown(event) {
         path.strokeColor = active_color;
     } else if (tools.active_tool == "erasing") {
         path.strokeColor = $('#canvasContainer').css("background-color");
+        active_color = $('#canvasContainer').css("background-color");
         path.strokeWidth = 10;
         tools.strokeWidth = 10;
     }
