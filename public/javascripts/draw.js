@@ -9,49 +9,64 @@ var send_paths_timer;
 var mouseTimer = 0;
 var mouseHeld;
 var paper_object_count = 1;
-var active_color ='#00000';
+var active_color = '#00000';
+var tools = {
+    "active_tool":"drawing",
+    "strokeWidth":2
+};
 var uid = (function() {
-  var S4 = function() {
-    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-  };
-  return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+    var S4 = function() {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }());
 
 
-
 function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
 }
 
 function onMouseDown(event) {
-    active_color = document.getElementById("chosen-value").value;
-    console.log(active_color);
+    var active_color = document.getElementById("chosen-value").value;
+    if(document.getElementById("tools").value != "{}") {
+        tools = JSON.parse(document.getElementById("tools").value);
+    }
+    //active_tool = "drawing";
+
 
     mouseTimer = 0;
     mouseHeld = setInterval(function() {
-    mouseTimer++;
+        mouseTimer++;
         if (mouseTimer > 3) {
-          mouseTimer = 0;
-          clearInterval(mouseHeld);
+            mouseTimer = 0;
+            clearInterval(mouseHeld);
         }
     }, 100);
     var point = event.point;
     path = new Path();
-    path.strokeColor = active_color;
-    path.strokeWidth = 2;
+    if (tools.active_tool == "drawing") {
+        path.strokeWidth = 2;
+        tools.strokeWidth = 2;
+        path.strokeColor = active_color;
+    } else if (tools.active_tool == "erasing") {
+        path.strokeColor = $('#canvasContainer').css("background-color");
+        path.strokeWidth = 10;
+        tools.strokeWidth = 10;
+    }
     path.add(event.point);
     path.name = uid + ":" + (++paper_object_count);
     view.draw();
     path_to_send = {
-      name: path.name,
-      rgba: active_color,
-      start: event.point,
-      path: []
+        name: path.name,
+        rgba: active_color,
+        start: event.point,
+        tools: tools,
+        path: []
     };
 }
 
@@ -65,14 +80,14 @@ function onMouseDrag(event) {
     path.smooth();
     view.draw();
     path_to_send.path.push({
-      top: top,
-      bottom: bottom
+        top: top,
+        bottom: bottom
     });
     if (!timer_is_active) {
         send_paths_timer = setInterval(function() {
-        socket.emit('draw:progress', room, uid, JSON.stringify(path_to_send));
-        path_to_send.path = new Array();
-    }, 100);
+            socket.emit('draw:progress', room, uid, JSON.stringify(path_to_send));
+            path_to_send.path = new Array();
+        }, 100);
     }
 
     timer_is_active = true;
@@ -110,13 +125,14 @@ var end_external_path = function(points, sessionId) {
 
 progress_external_path = function(points, sessionId) {
     var path = external_paths[sessionId];
+    console.log(points.tools.strokeWidth);
     if (!path) {
         external_paths[sessionId] = new Path();
         path = external_paths[sessionId];
         var start_point = new Point(points.start.x, points.start.y);
         //var color = ;
         path.strokeColor = points.rgba;
-        path.strokeWidth = 2;
+        path.strokeWidth = points.tools.strokeWidth;
         path.name = points.name;
         view.draw();
     }

@@ -17,19 +17,60 @@
     $(function() {
         $('#chatBox').load("Chat_box");
     });
+
+    function setActiveTool(tool) {
+        var value = JSON.parse(document.getElementById("tools").value);
+        value.active_tool = tool;
+        document.getElementById("tools").value = JSON.stringify(value);
+    }
 </script>
 
 <body>
-    <input type="hidden" id="chosen-value" value="000000">
+    <input type="hidden" id="chosen-value" value="00000">
+    <input type="hidden" id="tools" value="{}">
     <div class="pagecontainer" style="width:100%; margin-left:10%;">
 
         <div id="canvasContainer">
-            <div class="canvasbuttons">
-                <button id="color" class="jscolor {valueElement:'chosen-value', onFineChange:'setTextColor(this)'}">
-                </button>
-            </div>
-            <div style="margin-top:5px" >
-                <canvas id="draw" resize="true" keepalive="true" width="500" height="500"></canvas>
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="#">
+                            <button id="color" class=" jscolor {valueElement:'chosen-value', onFineChange:'setTextColor(this)'}">
+                            </button>
+                        </a>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav">
+                            <li class="active">
+                                <a><img alt="Pencil" onclick="setActiveTool('drawing');" class="imagebox" src="\icon\Marker-icon.png"></a>
+                            </li>
+                            <li>
+                                <a><img alt="Eraser" class="imagebox" onclick="setActiveTool('erasing');" src="\icon\Eraser-icon.png"></a>
+                            </li>
+                            <!--<li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Action</a></li>
+                                    <li><a href="#">Another action</a></li>
+                                    <li><a href="#">Something else here</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                </ul>
+                            </li> -->
+                        </ul>
+
+                    </div>
+                    <!-- /.navbar-collapse -->
+                </div>
+                <!-- /.container-fluid -->
+            </nav>
+            <div style="margin-top:5px;height:600px !important;">
+                <canvas id="draw" resize="true" keepalive="true"></canvas>
             </div>
         </div>
         <div id="chatBox"></div>
