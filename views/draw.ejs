@@ -14,9 +14,7 @@
     function setTextColor(picker) {
         document.getElementById("chosen-value").value = '#' + picker.toString();
     }
-    $(function() {
-        $('#chatBox').load("Chat_box");
-    });
+
 
     $(document).ready(function() {
         $('#pencilThickness a').click(function(e) {
@@ -95,7 +93,9 @@
                 <canvas id="draw" resize="true" keepalive="true"></canvas>
             </div>
         </div>
-        <div id="chatBox"></div>
+        <div id="chatBox">
+            <% include Chat_box %>
+        </div>
     </div>
 </body>
 

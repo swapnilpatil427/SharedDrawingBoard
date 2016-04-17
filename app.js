@@ -21,7 +21,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
+app.get('/', function(req, res, next) {
+  res.sendFile(__dirname + '/public/html/index.html');
+});
+app.get('/d/*', function(req, res, next) {
+    res.render('draw');
+});
 app.use('/client', client);
 
 
