@@ -11,8 +11,8 @@ var mouseHeld;
 var paper_object_count = 1;
 var active_color = '#00000';
 var tools = {
-    "active_tool":"drawing",
-    "strokeWidth":2
+    "active_tool": "drawing",
+    "strokeWidth": 2
 };
 var uid = (function() {
     var S4 = function() {
@@ -33,7 +33,7 @@ function hexToRgb(hex) {
 
 function onMouseDown(event) {
     var active_color = document.getElementById("chosen-value").value;
-    if(document.getElementById("tools").value != "{}") {
+    if (document.getElementById("tools").value != "{}") {
         tools = JSON.parse(document.getElementById("tools").value);
     }
     //active_tool = "drawing";
@@ -112,51 +112,64 @@ function onMouseUp(event) {
     timer_is_active = false;
 }
 
-var end_external_path = function(points, sessionId) {
-    var mypath = external_paths[sessionId];
-    if (mypath) {
-        mypath.add(new Point(points.end.x, points.end.y));
-        mypath.closed = true;
-        mypath.smooth();
+function clearCanvas() {
+    // Remove all but the active layer
+    if (project.layers.length > 1) {
+        var activeLayerID = project.activeLayer._id;
+        for (var i = 0; i < project.layers.length; i++) {
+            if (project.layers[i]._id != activeLayerID) {
+                project.layers[i].remove();
+                i--;
+            }
+        }
+    }
+}
+
+    var end_external_path = function(points, sessionId) {
+        var mypath = external_paths[sessionId];
+        if (mypath) {
+            mypath.add(new Point(points.end.x, points.end.y));
+            mypath.closed = true;
+            mypath.smooth();
+            view.draw();
+            external_paths[sessionId] = false;
+        }
+    };
+
+    progress_external_path = function(points, sessionId) {
+        var path = external_paths[sessionId];
+        console.log(points.tools.strokeWidth);
+        if (!path) {
+            external_paths[sessionId] = new Path();
+            path = external_paths[sessionId];
+            var start_point = new Point(points.start.x, points.start.y);
+            //var color = ;
+            path.strokeColor = points.rgba;
+            path.strokeWidth = points.tools.strokeWidth;
+            path.name = points.name;
+            view.draw();
+        }
+
+        var paths = points.path;
+        var length = paths.length;
+        for (var i = 0; i < length; i++) {
+            path.add(new Point(paths[i].top.x, paths[i].top.y));
+            path.insert(0, new Point(paths[i].bottom.x, paths[i].bottom.y));
+        }
+
+        path.smooth();
         view.draw();
-        external_paths[sessionId] = false;
-    }
-};
-
-progress_external_path = function(points, sessionId) {
-    var path = external_paths[sessionId];
-    console.log(points.tools.strokeWidth);
-    if (!path) {
-        external_paths[sessionId] = new Path();
-        path = external_paths[sessionId];
-        var start_point = new Point(points.start.x, points.start.y);
-        //var color = ;
-        path.strokeColor = points.rgba;
-        path.strokeWidth = points.tools.strokeWidth;
-        path.name = points.name;
-        view.draw();
-    }
-
-    var paths = points.path;
-    var length = paths.length;
-    for (var i = 0; i < length; i++) {
-        path.add(new Point(paths[i].top.x, paths[i].top.y));
-        path.insert(0, new Point(paths[i].bottom.x, paths[i].bottom.y));
-    }
-
-    path.smooth();
-    view.draw();
-};
+    };
 
 
-socket.on('draw:progress', function(sessionId, data) {
-    if (sessionId !== uid && data) {
-        progress_external_path(JSON.parse(data), sessionId);
-    }
-});
+    socket.on('draw:progress', function(sessionId, data) {
+        if (sessionId !== uid && data) {
+            progress_external_path(JSON.parse(data), sessionId);
+        }
+    });
 
-socket.on('draw:end', function(sessionId, data) {
-    if (sessionId !== uid && data) {
-        end_external_path(JSON.parse(data), sessionId);
-    }
-});
+    socket.on('draw:end', function(sessionId, data) {
+        if (sessionId !== uid && data) {
+            end_external_path(JSON.parse(data), sessionId);
+        }
+    });
