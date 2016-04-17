@@ -10,7 +10,23 @@
   background-attachment: fixed;
   background-position: 0px 37px;
   float:left;width:60%;border:1px solid black;
+  height: 600px !important;
 }
+
+.pagecontainer {
+    margin-left: 10%;
+    margin-top: 20px;
+}
+
+.canvasbuttons {
+    margin-left: 2%;
+    margin-top: 5px;
+    margin-right: 2%;
+}
+
+
+
+
 
 #color{
 	height:20px;
@@ -23,7 +39,7 @@
 	width:40%;
 	top:20px;
 	left:5%;
-	
+
 }
 
 
@@ -193,4 +209,4 @@
 
 .text-red {
     color: #e74c3c;
-}   
+}
