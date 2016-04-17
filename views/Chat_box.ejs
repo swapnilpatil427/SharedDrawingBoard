@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Chat box - Bootdey.com</title>
+	<link rel='stylesheet' href='/stylesheets/style.css'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+	<script src="/javascripts/socket.io.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+  var socket = io.connect();
+  $("#send").click(function() {
+		socket.emit('chat',$("#message").val());
+		$("#message").val('');
+		return false;
+  });
+  socket.on('chat', function(msg){
+   var date = new Date($.now());
+   var time = date.getHours()+":"+date.getMinutes();
+    $('#chatbox').append($('<hr><div class="row"><div class="col-lg-12"><div class="media"><a class="pull-left" href="#">'+
+	'<img class="media-object img-circle" src="/icon/user.png" alt=""></a><div class="media-body">'+
+	'<h4 class="media-heading">User<span class="small pull-right">'+time+'</span></h4><p style=" word-wrap: break-word; width:200px">'+msg+
+	'</p></div></div></div></div>'));
+	m = document.getElementById( 'chatbox' );
+	m.scrollTop = m.offsetHeight;
+  });
+  </script>
+</head>
+<body>
+
+                    
+<div style="width:1000px">
+    <div>
+        <div class="col-md-4">
+            <div class="portlet portlet-default">
+                <div class="portlet-heading">
+                    <div class="portlet-title">
+                        <h4><i class="fa fa-circle text-green"></i>Welcome User</h4>
+                    </div>
+                    <div class="portlet-widgets">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-white dropdown-toggle btn-xs" data-toggle="dropdown">
+                                <i class="fa fa-circle text-green"></i> Status
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#"><i class="fa fa-circle text-green"></i> Online</a>
+                                </li>
+                                <li><a href="#"><i class="fa fa-circle text-orange"></i> Away</a>
+                                </li>
+                                <li><a href="#"><i class="fa fa-circle text-red"></i> Offline</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <span class="divider"></span>
+                        <a data-toggle="collapse" data-parent="#accordion" href="#chat"><i class="fa fa-chevron-down"></i></a>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div id="chat" class="panel-collapse collapse in">
+                    <div id="chatbox" style="overflow-y: auto;overflow-x:hidden; width: auto; height: 300px;">
+					</div>
+                    <div class="portlet-footer">
+                        <form role="form">
+                            <div class="form-group">
+                                <textarea id="message" class="form-control" placeholder="Enter message..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button id="send" type="button" class="btn btn-default pull-right">Send</button>
+                                <div class="clearfix"></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.col-md-4 -->
+    </div>
+</div>                
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

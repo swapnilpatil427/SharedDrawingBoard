@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Future Board</title>
+	<link rel='stylesheet' href='/stylesheets/style.css'>
   </head>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
@@ -12,14 +13,20 @@
   function setTextColor(picker) {
       document.getElementById("chosen-value").value = '#' + picker.toString();
   }
+   $(function(){
+        $('#chatBox').load("Chat_box"); 
+    });
   </script>
   <body>
-      <button id="color" style="height:20px;width:20px;" class="jscolor {valueElement:'chosen-value', onFineChange:'setTextColor(this)'}">
- 	  </button>
-
  	<input type="hidden" id="chosen-value"  value="000000">
-    <div id="canvasContainer">
-        <canvas id="draw" resize="true" keepalive="true" width="1289" height="833"></canvas>
-    </div>
+    <div style="width:100%">
+    <div id="canvasContainer" >
+	<button id="color" class="jscolor {valueElement:'chosen-value', onFineChange:'setTextColor(this)'}">
+ 	  </button>
+    <canvas id="draw" resize="true" keepalive="true" width="500" height="500"></canvas>
+	 
+</div>
+<div id="chatBox"></div>
+</div>
   </body>
 </html>
