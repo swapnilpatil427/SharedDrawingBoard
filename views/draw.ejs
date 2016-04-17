@@ -18,6 +18,18 @@
         $('#chatBox').load("Chat_box");
     });
 
+    $(document).ready(function() {
+        $('#pencilThickness a').click(function(e) {
+            setStrokeWidth(this.text);
+        });
+    });
+
+    function setStrokeWidth(width) {
+        var value = JSON.parse(document.getElementById("tools").value);
+        value.strokeWidth = width;
+        document.getElementById("tools").value = JSON.stringify(value);
+    }
+
     function setActiveTool(tool) {
         var value = JSON.parse(document.getElementById("tools").value);
         value.active_tool = tool;
@@ -44,8 +56,18 @@
                     <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
-                            <li class="active">
-                                <a><img alt="Pencil" onclick="setActiveTool('drawing');" class="imagebox" src="\icon\Marker-icon.png"></a>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <img alt="Pencil" onclick="setActiveTool('drawing');" class="imagebox" src="\icon\Marker-icon.png">
+                                    <span class="caret"></span></a>
+                                <ul id="pencilThickness" class="dropdown-menu">
+                                    <li><a href="#">2</a></li>
+                                    <li><a href="#">4</a></li>
+                                    <li><a href="#">6</a></li>
+                                    <li><a href="#">8</a></li>
+                                    <li><a href="#">10</a></li>
+                                    <li><a href="#">12</a></li>
+                                </ul>
                             </li>
                             <li>
                                 <a><img alt="Eraser" class="imagebox" onclick="setActiveTool('erasing');" src="\icon\Eraser-icon.png"></a>

@@ -50,14 +50,13 @@ function onMouseDown(event) {
     var point = event.point;
     path = new Path();
     if (tools.active_tool == "drawing") {
-        path.strokeWidth = 2;
-        tools.strokeWidth = 2;
+        path.strokeWidth = tools.strokeWidth;
         path.strokeColor = active_color;
     } else if (tools.active_tool == "erasing") {
         path.strokeColor = $('#canvasContainer').css("background-color");
         active_color = $('#canvasContainer').css("background-color");
-        path.strokeWidth = 10;
-        tools.strokeWidth = 10;
+        path.strokeWidth = tools.strokeWidth;
+        tools.strokeWidth = tools.strokeWidth;
     }
     path.add(event.point);
     path.name = uid + ":" + (++paper_object_count);
