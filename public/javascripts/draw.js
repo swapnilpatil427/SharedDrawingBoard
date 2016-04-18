@@ -1,8 +1,7 @@
 var path;
-
+var room = window.location.pathname.split("/")[2];
 var socket = io();
 var path_to_send = {};
-var room = 'swapnil';
 var external_paths = {};
 var timer_is_active = false;
 var send_paths_timer;
@@ -36,9 +35,6 @@ function onMouseDown(event) {
     if (document.getElementById("tools").value != "{}") {
         tools = JSON.parse(document.getElementById("tools").value);
     }
-    //active_tool = "drawing";
-
-
     mouseTimer = 0;
     mouseHeld = setInterval(function() {
         mouseTimer++;
@@ -138,7 +134,6 @@ function clearCanvas() {
 
     progress_external_path = function(points, sessionId) {
         var path = external_paths[sessionId];
-        console.log(points.tools.strokeWidth);
         if (!path) {
             external_paths[sessionId] = new Path();
             path = external_paths[sessionId];
@@ -160,6 +155,8 @@ function clearCanvas() {
         path.smooth();
         view.draw();
     };
+
+    socket.emit('subscribe', room);
 
 
     socket.on('draw:progress', function(sessionId, data) {

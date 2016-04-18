@@ -28,21 +28,27 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
   socket.on('chat', function(msg){
- console.log('message: ' + msg);   
+ console.log('message: ' + msg);
    io.emit('chat', msg);
-   
+
   });
 
   socket.on('draw:progress', function (room, uid, co_ordinates) {
-    io.emit('draw:progress', uid, co_ordinates);
+      io.sockets.in(room).emit('draw:progress', uid, co_ordinates);
+    //io.sockets.in.emit('draw:progress', uid, co_ordinates);
     //draw.progressExternalPath(room, JSON.parse(co_ordinates), uid);
   });
-  
+
   // EVENT: User stops drawing something
   // Having room as a parameter is not good for secure rooms
   socket.on('draw:end', function (room, uid, co_ordinates) {
-    io.emit('draw:end', uid, co_ordinates);
+    io.sockets.in(room).emit('draw:end', uid, co_ordinates);
     //draw.endExternalPath(room, JSON.parse(co_ordinates), uid);
+  });
+
+  socket.on('subscribe',function(room) {
+      console.log(room);
+     socket.join(room);
   });
 
   socket.on('ping', function ( data ) {
