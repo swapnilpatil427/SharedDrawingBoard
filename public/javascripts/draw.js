@@ -31,6 +31,8 @@ function hexToRgb(hex) {
 }
 
 function onMouseDown(event) {
+    console.log("sd");
+
     var active_color = document.getElementById("chosen-value").value;
     if (document.getElementById("tools").value != "{}") {
         tools = JSON.parse(document.getElementById("tools").value);
