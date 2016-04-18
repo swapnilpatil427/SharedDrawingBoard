@@ -23,17 +23,14 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 
 io.on('connection', function(socket){
-  console.log('a user connected');
   socket.on('disconnect', function(){
-    console.log('user disconnected');
   });
   socket.on('chat', function(msg,room){
- console.log('message: ' + msg);
-   io.sockets.in(room).emit('chat', msg);
+   io.sockets.in(room.trim()).emit('chat', msg);
   });
 
   socket.on('draw:progress', function (room, uid, co_ordinates) {
-      io.sockets.in(room).emit('draw:progress', uid, co_ordinates);
+      io.sockets.in(room.trim()).emit('draw:progress', uid, co_ordinates);
     //io.sockets.in.emit('draw:progress', uid, co_ordinates);
     //draw.progressExternalPath(room, JSON.parse(co_ordinates), uid);
   });
@@ -41,13 +38,12 @@ io.on('connection', function(socket){
   // EVENT: User stops drawing something
   // Having room as a parameter is not good for secure rooms
   socket.on('draw:end', function (room, uid, co_ordinates) {
-    io.sockets.in(room).emit('draw:end', uid, co_ordinates);
+    io.sockets.in(room.trim()).emit('draw:end', uid, co_ordinates);
     //draw.endExternalPath(room, JSON.parse(co_ordinates), uid);
   });
 
   socket.on('subscribe',function(room) {
-      console.log(room);
-     socket.join(room);
+     socket.join(room.trim());
   });
 
   socket.on('ping', function ( data ) {
