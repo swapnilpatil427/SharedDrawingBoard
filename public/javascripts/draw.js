@@ -48,13 +48,13 @@ function onMouseDown(event) {
     var point = event.point;
     path = new Path();
     if (tools.active_tool == "drawing") {
-        path.strokeWidth = tools.strokeWidth;
+        path.strokeWidth = tools.pencilstrokeWidth;
         path.strokeColor = active_color;
     } else if (tools.active_tool == "erasing") {
         path.strokeColor = $('#canvasContainer').css("background-color");
         active_color = $('#canvasContainer').css("background-color");
-        path.strokeWidth = tools.strokeWidth;
-        tools.strokeWidth = tools.strokeWidth;
+        path.strokeWidth = tools.eraserstrokeWidth;
+        //tools.strokeWidth = tools.strokeWidth;
     }
     path.add(event.point);
     path.name = uid + ":" + (++paper_object_count);
@@ -142,7 +142,11 @@ function clearCanvas() {
             var start_point = new Point(points.start.x, points.start.y);
             //var color = ;
             path.strokeColor = points.rgba;
-            path.strokeWidth = points.tools.strokeWidth;
+            if (tools.active_tool == "drawing") {
+                path.strokeWidth = points.tools.pencilstrokeWidth;
+            } else if (tools.active_tool == "erasing") {
+                path.strokeWidth = points.tools.eraserstrokeWidth;
+            }
             path.name = points.name;
             view.draw();
         }

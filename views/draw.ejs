@@ -23,9 +23,9 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <script>
-    function setTextColor(picker) {
-        document.getElementById("chosen-value").value = '#' + picker.toString();
-    }
+        function setTextColor(picker) {
+            document.getElementById("chosen-value").value = '#' + picker.toString();
+        }
     </script>
 
 </head>
@@ -60,6 +60,7 @@
         <div class="row">
             <div class="col-md-8">
                 <div id="canvasContainer">
+
                     <nav class="navbar navbar-default">
                         <div class="container-fluid">
                             <!-- Brand and toggle get grouped for better mobile display -->
@@ -76,7 +77,7 @@
                                     <li class="dropdown active">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                             <img alt="Pencil" onclick="setActiveTool('drawing');" class="imagebox" src="\icon\Marker-icon.png">
-                                            <span class="caret"></span></a>
+                                            <span id="pencilWidth">2</span></a>
                                         <ul id="pencilThickness" class="dropdown-menu">
                                             <li><a href="#">2</a></li>
                                             <li><a href="#">4</a></li>
@@ -86,8 +87,19 @@
                                             <li><a href="#">12</a></li>
                                         </ul>
                                     </li>
-                                    <li>
-                                        <a><img alt="Eraser" class="imagebox" onclick="setActiveTool('erasing');" src="\icon\Eraser-icon.png"></a>
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                            <img alt="Eraser" class="imagebox" onclick="setActiveTool('erasing');" src="\icon\Eraser-icon.png">
+                                            <span id="eraserWidth">2</span>
+                                        </a>
+                                        <ul id="eraserThickness" class="dropdown-menu">
+                                            <li><a href="#">2</a></li>
+                                            <li><a href="#">4</a></li>
+                                            <li><a href="#">6</a></li>
+                                            <li><a href="#">8</a></li>
+                                            <li><a href="#">10</a></li>
+                                            <li><a href="#">12</a></li>
+                                        </ul>
                                     </li>
                                     <li>
                                         <a id="reset">Clear</a>
@@ -111,7 +123,7 @@
                         </div>
                         <!-- /.container-fluid -->
                     </nav>
-                    <div style="margin-top:5px;height:600px !important;">
+                    <div class="canvasDiv" style="margin-top:5px;height:600px !important;">
                         <canvas id="draw" resize="true" keepalive="true"></canvas>
                     </div>
                 </div>
@@ -190,9 +202,6 @@
 
     </div>
     <!-- /.container -->
-
-
-
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
@@ -202,8 +211,6 @@
 <script src="/javascripts/jscolor.min.js"></script>
 <script src='/javascripts/draw.js' type="text/paperscript" canvas="draw"></script>
 <script>
-
-
     paper.install(window);
     window.onload = function() {
         paper.setup('draw');
@@ -215,14 +222,34 @@
 
     };
     $(document).ready(function() {
+        $('.dropdown').click(function(e) {
+            $('.dropdown').each(function(index) {
+                $(this).removeClass('active');
+            });
+            $(this).addClass('active');
+        })
         $('#pencilThickness a').click(function(e) {
-            setStrokeWidth(this.text);
+            setStrokeWidthPencil(this.text);
+            $('#pencilWidth').text(this.text);
+            setActiveTool('drawing');
+
+        });
+        $('#eraserThickness a').click(function(e) {
+            setStrokeWidthEraser(this.text);
+            $('#eraserWidth').text(this.text);
+            setActiveTool('erasing');
         });
     });
 
-    function setStrokeWidth(width) {
+    function setStrokeWidthEraser(width) {
         var value = JSON.parse(document.getElementById("tools").value);
-        value.strokeWidth = width;
+        value.eraserstrokeWidth = width;
+        document.getElementById("tools").value = JSON.stringify(value);
+    }
+
+    function setStrokeWidthPencil(width) {
+        var value = JSON.parse(document.getElementById("tools").value);
+        value.pencilstrokeWidth = width;
         document.getElementById("tools").value = JSON.stringify(value);
     }
 
@@ -230,6 +257,8 @@
         var value = JSON.parse(document.getElementById("tools").value);
         value.active_tool = tool;
         document.getElementById("tools").value = JSON.stringify(value);
+        //$(".canvasDiv").css({"cursor":"url('http://downloads.totallyfreecursors.com/cursor_files/pen.cur')"});
     }
 </script>
+
 </html>
