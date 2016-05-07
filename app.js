@@ -21,62 +21,45 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-var mongodb = require('mongodb');
-
-var MongoClient = mongodb.MongoClient;
-
-var url = 'mongodb://localhost:27017/DrawToShare';
 
 
-MongoClient.connect(url, function(err, db) {
-    if (err) {
-        console.log('Unable to connect to the mongoDB server. Error:', err);
-    } else {
-        console.log('Connection established to', url);
-        //console.log(db);
-        attachDB = function(req, res, next) {
-            req.db = db;
-            next();
-        };
 
-        app.get('/', function(req, res, next) {
-            res.sendFile(__dirname + '/public/html/index.html');
+app.get('/', function(req, res, next) {
+    res.sendFile(__dirname + '/public/html/index.html');
+});
+app.get('/d/*', function(req, res, next) {
+    draw.run(req, res, next);
+});
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: err
         });
-        app.get('/d/*',attachDB, function(req, res, next) {
-            draw.run(req, res, next);
-        });
+    });
+}
 
-        // catch 404 and forward to error handler
-        app.use(function(req, res, next) {
-            var err = new Error('Not Found');
-            err.status = 404;
-            next(err);
-        });
-
-        // error handlers
-
-        // development error handler
-        // will print stacktrace
-        if (app.get('env') === 'development') {
-            app.use(function(err, req, res, next) {
-                res.status(err.status || 500);
-                res.render('error', {
-                    message: err.message,
-                    error: err
-                });
-            });
-        }
-
-        // production error handler
-        // no stacktraces leaked to user
-        app.use(function(err, req, res, next) {
-            res.status(err.status || 500);
-            res.render('error', {
-                message: err.message,
-                error: {}
-            });
-        });
-    }
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {}
+    });
 });
 
 module.exports = app;
