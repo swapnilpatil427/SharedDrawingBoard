@@ -123,72 +123,74 @@ function clearCanvas() {
     }
 }
 
-    var end_external_path = function(points, sessionId) {
-        var mypath = external_paths[sessionId];
-        if (mypath) {
-            mypath.add(new Point(points.end.x, points.end.y));
-            mypath.closed = true;
-            mypath.smooth();
-            view.draw();
-            external_paths[sessionId] = false;
-        }
-    };
-
-    progress_external_path = function(points, sessionId) {
-        var path = external_paths[sessionId];
-        if (!path) {
-            external_paths[sessionId] = new Path();
-            path = external_paths[sessionId];
-            var start_point = new Point(points.start.x, points.start.y);
-            //var color = ;
-            path.strokeColor = points.rgba;
-            if (tools.active_tool == "drawing") {
-                path.strokeWidth = points.tools.pencilstrokeWidth;
-            } else if (tools.active_tool == "erasing") {
-                path.strokeWidth = points.tools.eraserstrokeWidth;
-            }
-            path.name = points.name;
-            view.draw();
-        }
-
-        var paths = points.path;
-        var length = paths.length;
-        for (var i = 0; i < length; i++) {
-            path.add(new Point(paths[i].top.x, paths[i].top.y));
-            path.insert(0, new Point(paths[i].bottom.x, paths[i].bottom.y));
-        }
-
-        path.smooth();
+var end_external_path = function(points, sessionId) {
+    var mypath = external_paths[sessionId];
+    if (mypath) {
+        mypath.add(new Point(points.end.x, points.end.y));
+        mypath.closed = true;
+        mypath.smooth();
         view.draw();
-    };
+        external_paths[sessionId] = false;
+    }
+};
 
-    socket.emit('subscribe', room);
-
-
-    socket.on('draw:progress', function(sessionId, data) {
-        if (sessionId !== uid && data) {
-            progress_external_path(JSON.parse(data), sessionId);
+progress_external_path = function(points, sessionId) {
+    console.log(sessionId);
+    var path = external_paths[sessionId];
+    if (!path) {
+        external_paths[sessionId] = new Path();
+        path = external_paths[sessionId];
+        var start_point = new Point(points.start.x, points.start.y);
+        //var color = ;
+        path.add(start_point);
+        path.strokeColor = points.rgba;
+        if (tools.active_tool == "drawing") {
+            path.strokeWidth = points.tools.pencilstrokeWidth;
+        } else if (tools.active_tool == "erasing") {
+            path.strokeWidth = points.tools.eraserstrokeWidth;
         }
-    });
+        path.name = points.name;
+        view.draw();
+    }
 
-    socket.on('draw:end', function(sessionId, data) {
-        if (sessionId !== uid && data) {
-            end_external_path(JSON.parse(data), sessionId);
-        }
-    });
+    var paths = points.path;
+    var length = paths.length;
+    for (var i = 0; i < length; i++) {
+        path.add(new Point(paths[i].top.x, paths[i].top.y));
+        path.insert(0, new Point(paths[i].bottom.x, paths[i].bottom.y));
+    }
 
-    $("#send").click(function() {
-        socket.emit('chat', $("#message").val(),room);
-        $("#message").val('');
-        return false;
-    });
-    socket.on('chat', function(msg) {
-        var date = new Date($.now());
-        var time = date.getHours() + ":" + date.getMinutes();
-        $('#chatbox').append($('<hr><div class="row"><div class="col-lg-12"><div class="media"><a class="pull-left" href="#">' +
-            '<img class="media-object img-circle" src="/icon/user.png" alt=""></a><div class="media-body">' +
-            '<h4 class="media-heading">User<span class="small pull-right">' + time + '</span></h4><p style=" word-wrap: break-word; width:200px">' + msg +
-            '</p></div></div></div></div>'));
-        m = document.getElementById('chatbox');
-        m.scrollTop = m.offsetHeight;
-    });
+    path.smooth();
+    view.draw();
+};
+
+socket.emit('subscribe', room);
+
+
+socket.on('draw:progress', function(sessionId, data) {
+    if (sessionId !== uid && data) {
+        progress_external_path(JSON.parse(data), sessionId);
+    }
+});
+
+socket.on('draw:end', function(sessionId, data) {
+    if (sessionId !== uid && data) {
+        end_external_path(JSON.parse(data), sessionId);
+    }
+});
+
+$("#send").click(function() {
+    socket.emit('chat', $("#message").val(), room);
+    $("#message").val('');
+    return false;
+});
+socket.on('chat', function(msg) {
+    var date = new Date($.now());
+    var time = date.getHours() + ":" + date.getMinutes();
+    $('#chatbox').append($('<hr><div class="row"><div class="col-lg-12"><div class="media"><a class="pull-left" href="#">' +
+        '<img class="media-object img-circle" src="/icon/user.png" alt=""></a><div class="media-body">' +
+        '<h4 class="media-heading">User<span class="small pull-right">' + time + '</span></h4><p style=" word-wrap: break-word; width:200px">' + msg +
+        '</p></div></div></div></div>'));
+    m = document.getElementById('chatbox');
+    m.scrollTop = m.offsetHeight;
+});
