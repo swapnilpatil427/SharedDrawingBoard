@@ -7,7 +7,6 @@
 var app = require('../app');
 var debug = require('debug')('HeyChat:server');
 var http = require('http');
-var draw = require("../src/draw");
 
 /**
  * Get port from environment and store in Express.
@@ -22,33 +21,52 @@ app.set('port', port);
 
 var server = http.createServer(app);
 var io = require('socket.io')(server);
-var paths = [];
-io.on('connection', function(socket) {
-    socket.on('disconnect', function() {});
-    socket.on('chat', function(msg, room) {
-        io.sockets.in(room.trim()).emit('chat', msg);
-    });
 
-    socket.on('draw:progress', function(room, uid, co_ordinates) {
-        io.sockets.in(room.trim()).emit('draw:progress', uid, co_ordinates);
-        draw.savePath(room,co_ordinates);
-        //paths.push(co_ordinates.path);
-        //io.sockets.in.emit('draw:progress', uid, co_ordinates);
-        //draw.progressExternalPath(room, JSON.parse(co_ordinates), uid);
-    });
+io.on('connection', function(socket){
+  socket.on('disconnect', function(){
+  });
+  socket.on('chat', function(msg,room){
+   io.sockets.in(room.trim()).emit('chat', msg);
+  });
 
-    // EVENT: User stops drawing something
-    // Having room as a parameter is not good for secure rooms
-    socket.on('draw:end', function(room, uid, co_ordinates) {
-        io.sockets.in(room.trim()).emit('draw:end', uid, co_ordinates);
-        //console.log(paths);
-        //draw.endExternalPath(room, JSON.parse(co_ordinates), uid);
-    });
+  socket.on('draw:progress', function (room, uid, co_ordinates) {
+      io.sockets.in(room.trim()).emit('draw:progress', uid, co_ordinates);
+    //io.sockets.in.emit('draw:progress', uid, co_ordinates);
+    //draw.progressExternalPath(room, JSON.parse(co_ordinates), uid);
+  });
 
-    socket.on('subscribe', function(room) {
-        socket.join(room.trim());
-        draw.subscribe(room);
-    });
+  // EVENT: User stops drawing something
+  // Having room as a parameter is not good for secure rooms
+  socket.on('draw:end', function (room, uid, co_ordinates) {
+    io.sockets.in(room.trim()).emit('draw:end', uid, co_ordinates);
+    //draw.endExternalPath(room, JSON.parse(co_ordinates), uid);
+  });
+
+  socket.on('subscribe',function(room) {
+     socket.join(room.trim());
+  });
+
+  socket.on('ping', function ( data ) {
+
+    console.log('socket: server recieves ping (2)');
+
+    // (3): Emit a pong event all listening browsers
+    // with the data from the ping event
+    io.sockets.emit( 'pong', data );
+
+    console.log('socket: server sends pong to all (3)');
+
+  });
+
+  socket.on( 'drawCircle', function( data, session ) {
+
+    console.log( "session " + session + " drew:");
+    console.log( data );
+
+
+    socket.broadcast.emit( 'drawCircle', data );
+
+  });
 });
 
 /**
@@ -64,19 +82,19 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val) {
-    var port = parseInt(val, 10);
+  var port = parseInt(val, 10);
 
-    if (isNaN(port)) {
-        // named pipe
-        return val;
-    }
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
 
-    if (port >= 0) {
-        // port number
-        return port;
-    }
+  if (port >= 0) {
+    // port number
+    return port;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -84,25 +102,27 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
 
-    var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
 
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
 }
 
 /**
@@ -110,7 +130,9 @@ function onError(error) {
  */
 
 function onListening() {
-    var addr = server.address();
-    var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-    debug('Listening on ' + bind);
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
 }
